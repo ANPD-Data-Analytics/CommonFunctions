@@ -1,45 +1,29 @@
-### Azure SQL Server SQL, Azure SSAS Cube MDX, Connecting with R Lunch and Learn Example with Sourcing the Connections
+#### Common Functions
 ### Date Created: 5/29/2020
-### Updates: 04/12/2021 - shieldx1
 ### Author: Daniel Shields daniel.shields@abbott.com
+### Notes: Machine must have Java (one of the versions listed below) in order for mailR to work
+
+### Updated: 03/21/2022 (daniel.shields@abbott.com) - cleaning up and commentin the code to be more shareable and readable.
 
 
-# Load Packages ----------------------------------------------------------
-# Commentted uncommon packages to install for various reasons ------------
-
-#install.packages("installr")
-#library(installr)
-#updateR()
-
-
-
-#install.packages("taskscheduleR")
-#library(taskscheduleR)
-#taskscheduleR:::taskschedulerAddin()
 
 #set Java Home for mailR
 if(file.exists('C:\\Program Files\\Java\\jre1.8.0_321')) {
-  Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_321')  
+  Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_321')
 } else {
   Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_291')
 }
 
+
 library(mailR)
-library(tidyverse)
-library(readtext)
-library(lubridate)
 library(odbc)
-library(plotly)
 # olapR needs to be manually copied to the local package directory.  Does not work in R 4.0 (04/12/2021)
 #library(olapR)
-#library(RDCOMClient)
 
 
 
-# source connections file
-source("C:/Users/shieldx1/OneDrive - Abbott/LoginInfo/Connections.R")
+#### Functions ---------------------------------------------------------------
 
-# Functions ---------------------------------------------------------------
 
 # execute query on sql server - no return
 qrySandboxExecute <- function(sqlText1) {
@@ -51,6 +35,8 @@ qrySandboxExecute <- function(sqlText1) {
   #query sent
   input <- dbGetQuery(con, sqlText1)
 }
+
+
 
 # function defined to query the sandbox - return a dataframe
 qrySandboxReturn <- function(sqlText1) {
@@ -65,6 +51,8 @@ qrySandboxReturn <- function(sqlText1) {
   return(outputData)
 }
 
+
+
 # function defined to post data to the sandbox
 postDataToSandbox <- function(df, dfname) {
   #connection to the data defined
@@ -76,6 +64,8 @@ postDataToSandbox <- function(df, dfname) {
                df,
                overwrite = TRUE)
 }
+
+
 
 # function defined to post data to the sandbox with optional fieldtypes
 postDataToSandboxv2 <- function(df, dfname, fieldtypes = NULL) {
@@ -97,6 +87,8 @@ postDataToSandboxv2 <- function(df, dfname, fieldtypes = NULL) {
   }
 }
 
+
+
 # execute query on sql server - no return
 qryBOAExecute <- function(sqlText1) {
   #collapse any potential lists sent into character values before execute.
@@ -107,6 +99,8 @@ qryBOAExecute <- function(sqlText1) {
   #query sent
   input <- dbGetQuery(con, sqlText1)
 }
+
+
 
 # function defined to query the sandbox - return a dataframe
 qryBOAReturn <- function(sqlText1) {
@@ -121,6 +115,8 @@ qryBOAReturn <- function(sqlText1) {
   return(outputData)
 }
 
+
+
 # function defined to post data to the sandbox
 postDataToBOA <- function(df, dfname) {
   #connection to the data defined
@@ -132,6 +128,8 @@ postDataToBOA <- function(df, dfname) {
                df,
                overwrite = TRUE)
 }
+
+
 
 # function defined to post data to the sandbox with optional fieldtypes
 postDataToBOAv2 <- function(df, dfname, fieldtypes = NULL) {
@@ -153,6 +151,9 @@ postDataToBOAv2 <- function(df, dfname, fieldtypes = NULL) {
   }
 }
 
+
+
+##email function using mailR - no attachment
 sendEmailNoAtt <- function (to, sendby, subject, body){
   send.mail(
     from = sendby,
@@ -168,6 +169,7 @@ sendEmailNoAtt <- function (to, sendby, subject, body){
     html = TRUE)
 }
 
+##email function using mailR - with attachment
 sendEmailWAtt <- function (to, sendby, subject, body, attachment){
   send.mail(
     from = sendby,
