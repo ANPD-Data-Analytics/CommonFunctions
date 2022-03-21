@@ -15,8 +15,8 @@ if(file.exists('C:\\Program Files\\Java\\jre1.8.0_321')) {
 }
 
 
-# library(mailR)
-# library(odbc)
+library(mailR)
+library(odbc)
 # olapR needs to be manually copied to the local package directory.  Does not work in R 4.0 (04/12/2021)
 #library(olapR)
 
