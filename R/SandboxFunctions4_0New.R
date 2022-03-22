@@ -188,15 +188,10 @@ sendEmailWAtt <- function (to, sendby, subject, body, attachment){
 
 
 
-#intitialize logging for the processes
-OpenLog <- function (LogFile) {
+#log Events
+LogEvent <- function (LogString, LogFile) {
   log_con <- file(LogFile, open="a")
-    log_string <- paste("\n\n",now(), ": Opening and starting", LogFile)
+  log_string <- paste(now(), ": ", LogString)
   cat(log_string, file = log_con, sep="\n")
 }
 
-#log events
-LogEvent <- function (logString, LogFile){
-  log_string <- paste("\n\n",now(), ": ", logString)
-  cat(log_string, file = LogFile, sep="\n")
-}
