@@ -4,7 +4,7 @@
 ### Notes: Machine must have Java (one of the versions listed below) in order for mailR to work
 
 ### Updated: 03/21/2022 (daniel.shields@abbott.com) - cleaning up and commentin the code to be more shareable and readable.
-
+### Updated: 05/17/2022 (rachel.addlespurger@abbott.com) - adding function used for restated date selection by week used in Edge/Vendor Central scripts.
 
 
 #set Java Home for mailR
@@ -195,3 +195,12 @@ LogEvent <- function (LogString, LogFile) {
   cat(log_string, file = log_con, sep="\n")
 }
 
+
+#date based on current date, number of weeks prior, and day of week
+prevweekday <- function(date, wday) {
+  date <- as.Date(date)
+  diff <- wday - wday(date)
+  if (diff > 0)
+    diff <- diff - 7
+  return(date + diff)
+}
