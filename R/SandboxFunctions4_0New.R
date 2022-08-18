@@ -8,15 +8,32 @@
 
 
 #set Java Home for mailR
+# Set Java Home ####
 if(file.exists('C:\\Program Files\\Java\\jre1.8.0_321')) {
   Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_321')
-} else {
+  
+} else if (file.exists('C:\\Program Files\\Java\\jre1.8.0_291')) {
   Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_291')
+  
+} else if (file.exists('C:\\Program Files\\Java\\jre1.8.0_271')) {
+  Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_271')
+  
+} else if (file.exists('C:\\Program Files\\Java\\jre1.8.0_45')) {
+  Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_45')
 }
 
+  if(!require(mailR)){
+    install.packages("mailR",dependencies = TRUE)
+    library(mailR)
+  }
 
-library(mailR)
-library(odbc)
+  if(!require(odbc)){
+    install.packages("odbc",dependencies = TRUE)
+    library(odbc)
+  }
+
+#library(mailR)
+#library(odbc)
 # olapR needs to be manually copied to the local package directory.  Does not work in R 4.0 (04/12/2021)
 #library(olapR)
 
