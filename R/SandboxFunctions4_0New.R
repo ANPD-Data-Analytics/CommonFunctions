@@ -135,13 +135,15 @@ qryBOAReturn <- function(sqlText1) {
 
 
 # function defined to post data to the sandbox
-postDataToBOA <- function(df, dfname) {
+postDataToBOA <- function(df, tblname, schma) {
   #connection to the data defined
   con1 <- dbConnect(odbc::odbc(),
                     .connection_string = odbcConnStrBOA)
+  tblID <- Id(schema = schma, 
+                                  table = tblname)
   #write table to SQL Server
   dbWriteTable(con1,
-               dfname,
+               tblID,
                df,
                overwrite = TRUE)
 }
