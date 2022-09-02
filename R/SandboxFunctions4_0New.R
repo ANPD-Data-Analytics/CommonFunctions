@@ -139,11 +139,10 @@ postDataToBOA <- function(df, tblname, schma) {
   #connection to the data defined
   con1 <- dbConnect(odbc::odbc(),
                     .connection_string = odbcConnStrBOA)
-  tblID <- Id(schema = schma, 
-                                  table = tblname)
+  
   #write table to SQL Server
   dbWriteTable(con1,
-               tblID,
+               c(schma, tblname),
                df,
                overwrite = TRUE)
 }
