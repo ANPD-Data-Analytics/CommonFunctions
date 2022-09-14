@@ -148,6 +148,20 @@ postDataToBOA2 <- function(df, tblname, schma) {
 }
 
 
+# function defined to post data to the BOA; appending to tables vs. overwriting
+postDataToBOAAppend <- function(df, tblname, schma) {
+  #connection to the data defined
+  con1 <- dbConnect(odbc::odbc(),
+                    .connection_string = odbcConnStrBOA)
+  
+  #write table to SQL Server
+  dbWriteTable(con1,
+               name=DBI::Id(schema=schma,table=tblname),
+               df,
+               overwrite = FALSE)
+}
+
+
 
 # function defined to post data to the sandbox with optional fieldtypes
 postDataToBOAv2 <- function(df, dfname, fieldtypes = NULL) {
