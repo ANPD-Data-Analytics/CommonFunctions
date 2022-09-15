@@ -158,7 +158,8 @@ postDataToBOAAppend <- function(df, tblname, schma) {
   dbWriteTable(con1,
                name=DBI::Id(schema=schma,table=tblname),
                df,
-               overwrite = FALSE)
+               overwrite = FALSE,
+               append = TRUE)
 }
 
 
