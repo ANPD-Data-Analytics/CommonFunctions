@@ -105,6 +105,28 @@ postDataToSandboxv2 <- function(df, dfname, fieldtypes = NULL) {
 }
 
 
+# function defined to post data as append to the sandbox with optional fieldtypes
+postDataToSandboxAppend <- function(df, dfname, fieldtypes = NULL){
+    #connection to the data defined
+  con2 <- dbConnect(odbc::odbc(), 
+                    .connection_string = odbcConnStr)
+  #if fieldtypes is in the input parameters, include it in the statement
+  if(missing(fieldtypes)){
+    dbWriteTable(con2, 
+                 dfname, 
+                 df, 
+                 overwrite = FALSE, 
+                 append = TRUE)
+  }else {
+    dbWriteTable(con2, 
+                 dfname, 
+                 df, 
+                 overwrite = FALSE, 
+                 append = TRUE, 
+                 field.types = fieldtypes)
+  }
+}
+
 
 # execute query on sql server - no return
 qryBOAExecute <- function(sqlText1) {
