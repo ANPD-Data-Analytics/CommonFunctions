@@ -117,7 +117,7 @@ postDataToSandboxAppend <- function(df, dfname, fieldtypes = NULL){
                  df, 
                  overwrite = FALSE, 
                  append = TRUE)
-  }else {
+  } else {
     dbWriteTable(con2, 
                  dfname, 
                  df, 
