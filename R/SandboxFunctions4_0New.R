@@ -250,6 +250,14 @@ LogEvent <- function (LogString, LogFile) {
   cat(log_string, file = log_con, sep="\n")
 }
 
+# Message2Log
+Message2Log <- function (M) 
+{ #log <- paste0(directoryLoc,"/Log_Files/",Sys.Date(),".txt")
+  #log_file <- file(log, open="a")
+  log_string <- paste(now(), (M))
+  cat(log_string, file = log_file, sep = "\n")
+  message(M)
+}
 
 #date based on current date, number of weeks prior, and day of week
 prevweekday <- function(date, wday) {
@@ -258,4 +266,82 @@ prevweekday <- function(date, wday) {
   if (diff > 0)
     diff <- diff - 7
   return(date + diff)
+}
+
+# TMC Functions ####
+
+#Sum all
+SumAll <- function(df) {
+  output <- df %>% 
+    dplyr::group_by_if(negate(is.numeric)) %>% 
+    dplyr::summarise_if(is.numeric, sum, na.rm = TRUE) %>% ungroup(.)
+}
+
+cleanNAs <- function(df){
+  sel <- names(df)
+  df[sel] <-
+    lapply(df[sel], function(x)
+      replace(x, x %in% "N/A", NA))
+  df
+}
+
+#Impact summary
+impactsummaryfun <- function(sharetemptot_out, start_dt = NULL, end_dt = NULL) {if (missing(start_dt) | missing(end_dt)) {
+  sharetemptot_out <- sharetemptot_out
+} else {
+  sharetemptot_out <- sharetemptot_out %>%
+    filter(
+      `Period Description` >= mdy(start_dt) &
+        `Period Description` <= mdy(end_dt)
+    )}
+  sharetemptot_out <- sharetemptot_out %>%
+    select(
+      NIELSEN_SEGMENT,
+      `Manufacturer`,
+      `$`,
+      `$ Previous`,
+      `$ Diff`,
+      `EQ`,
+      `EQ Previous`,
+      `EQ Diff`
+    ) %>%
+    SumAll(.) %>%
+    group_by(NIELSEN_SEGMENT) %>%
+    mutate(
+      `$ Share` = round((`$` / sum(`$`)) * 100, digits = 2),
+      `EQ Share` = round((`EQ` / sum(`EQ`)) * 100, digits = 2),
+      `$ Share Previous` = round((`$ Previous` / sum(`$ Previous`)) *
+                                   100, digits = 2),
+      `EQ Share Previous` = round((`EQ Previous` / sum(`EQ Previous`)) *
+                                    100, digits = 2),
+      `$ Share Diff` = `$ Share` - `$ Share Previous`,
+      `EQ Share Diff` = `EQ Share` - `EQ Share Previous`,
+      `$ % Change` = round((`$ Diff` / `$ Previous`) * 100, digits = 2),
+      `EQ % Change` = round((`EQ Diff` / `EQ Previous`) * 100, digits = 2),
+      `$ % Tot Change` = round((`$ Diff` / sum(`$ Previous`)) * 100, digits = 2),
+      `EQ % Tot Change` = round((`EQ Diff` / sum(`EQ Previous`)) * 100, digits = 2)
+    ) %>%
+    ungroup(.) %>%
+    # filter(`$ Share Diff` != 0 |
+    #          `EQ Share Diff` != 0 | `$ % Change` != 0 | `EQ % Change` != 0) %>%
+    select(
+      NIELSEN_SEGMENT,
+      `Manufacturer`,
+      `$`,
+      `$ Previous`,
+      `$ Diff`,
+      `$ % Change`,
+      `$ % Tot Change`,
+      `$ Share`,
+      `$ Share Previous`,
+      `$ Share Diff`,
+      `EQ`,
+      `EQ Previous`,
+      `EQ Diff`,
+      `EQ % Change`,
+      `EQ % Tot Change`,
+      `EQ Share`,
+      `EQ Share Previous`,
+      `EQ Share Diff`
+    )
 }
