@@ -208,6 +208,57 @@ postDataToBOAv2 <- function(df, dfname, fieldtypes = NULL) {
 
 
 
+# function to fastload large data to the BOA
+# will drop table, then append a list of dataframes together into the target schema.tblname
+fastLoadUtil <- function (df, rows_to_chop_by, tblname, schma) 
+{
+  
+  rowsinfile <- rows_to_chop_by
+  myDataFileCount <- as.integer((nrow(df)/rowsinfile)+1)
+  
+  i <- 1
+  myData <- list()
+  
+  #loop to filter and populate the list
+  while (i <= myDataFileCount) 
+  {
+    
+    myData[[i]] <- df %>%
+      filter((row(df) <= (rowsinfile*i)) & (row(df) > (rowsinfile*(i-1))))
+    
+    LogEvent(paste0("myData list build #:", i, " of ", myDataFileCount), LogFile)
+    
+    i <- i + 1
+    
+  }
+  
+  #drop the table in case it's there.
+  LogEvent(paste0("Drop the table ", schma, ".", tblname, "in case it's there:"), LogFile)
+  sql <- paste0("DROP TABLE IF EXISTS ", schma, ".", tblname, ";")
+  qryBOAExecute(sql)
+  
+  #loop through the list of Dataframes to load these dataframes to a table on the BOA
+  LogEvent(paste0("Start the SQL Server Load loop:"), LogFile)
+  c <- 1
+  
+  #load loop
+  while (c <= myDataFileCount) 
+  {
+    
+    LogEvent(paste0("Load file ", c, " of ", myDataFileCount, " Begin: "), LogFile)
+    
+    #write table to SQL Server
+    postDataToBOAAppend(myData[[c]], tblname, schma)
+    
+    LogEvent(paste0("Load file ", c, " of ", myDataFileCount, " Completed: "), LogFile)
+    
+    c <- c + 1
+    
+  }
+}
+
+
+
 ##email function using mailR - no attachment
 sendEmailNoAtt <- function (to, sendby, subject, body){
   send.mail(
