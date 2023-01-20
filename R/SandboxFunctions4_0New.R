@@ -195,7 +195,7 @@ postDataToBOAv2 <- function(df, dfname, fieldtypes = NULL) {
 
 # function to fastload large data to the BOA
 # will drop table, then append a list of dataframes together into the target schema.tblname
-fastLoadUtil <- function (df, rows_to_chop_by, tblname, schma, LogFile) 
+fastLoadUtil <- function (df, rows_to_chop_by, tblname, schma, LogFilePath) 
 {
   
   #suppress messages and ensure packages necessary are loaded for users calling this function
