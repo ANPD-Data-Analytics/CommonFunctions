@@ -212,12 +212,12 @@ fastLoadUtil <- function (df, rows_to_chop_by, tblname, schma, LogFilePath)
   .GlobalEnv$odbcConnStrBOA <- Connections::odbcConnStrBOA
   .GlobalEnv$postDataToBOAAppend <- CommonFunctions::postDataToBOAAppend
   
+  LogFile <- LogFilePath
   rowsinfile <- rows_to_chop_by
   myDataFileCount <- as.integer((nrow(df)/rowsinfile)+1)
-  
-  i <- 1
   myData <- list()
-  
+
+  i <- 1
   #loop to filter and populate the list
   while (i <= myDataFileCount) 
   {
@@ -238,8 +238,8 @@ fastLoadUtil <- function (df, rows_to_chop_by, tblname, schma, LogFilePath)
   
   #loop through the list of Dataframes to load these dataframes to a table on the BOA
   LogEvent(paste0("Start the SQL Server Load loop:"), LogFile)
-  c <- 1
   
+  c <- 1
   #load loop
   while (c <= myDataFileCount) 
   {
