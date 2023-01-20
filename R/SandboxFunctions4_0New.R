@@ -212,12 +212,33 @@ postDataToBOAv2 <- function(df, dfname, fieldtypes = NULL) {
 # will drop table, then append a list of dataframes together into the target schema.tblname
 fastLoadUtil <- function (df, rows_to_chop_by, tblname, schma) 
 {
+  #Ex.
+  #fastLoadUtil(Test_df, 1000, "Test_tblname" , "Test_schma")
+  
+  suppressPackageStartupMessages(require(dplyr))
+  suppressPackageStartupMessages(require(lubridate))
+  require(DBI)
+  require(devtools)
+  require(CommonFunctions)
+  require(Connections)
+  
+  .GlobalEnv$LogEvent <- CommonFunctions::LogEvent
+  .GlobalEnv$qryBOAExecute <- CommonFunctions::qryBOAExecute
+  .GlobalEnv$odbcConnStrBOA <- Connections::odbcConnStrBOA
+  .GlobalEnv$postDataToBOAAppend <- CommonFunctions::postDataToBOAAppend
+  
+  if(!exists("LogFile")){
+    .GlobalEnv$LogFile <- paste0(rstudioapi::getSourceEditorContext()$path,"_LogFile.txt")
+    message(paste0("Note: No 'LogFile' defined, Log saved to ",LogFile))
+  }
   
   rowsinfile <- rows_to_chop_by
   myDataFileCount <- as.integer((nrow(df)/rowsinfile)+1)
   
   i <- 1
   myData <- list()
+  
+  Start_time <- Sys.time()
   
   #loop to filter and populate the list
   while (i <= myDataFileCount) 
@@ -254,7 +275,13 @@ fastLoadUtil <- function (df, rows_to_chop_by, tblname, schma)
     
     c <- c + 1
     
+    
   }
+  
+  End_time <- Sys.time()
+  message(nrow(df)," rows loaded in ",round(difftime(End_time, Start_time, units = "mins"), 2) , " mins. Loaded ", rows_to_chop_by, " rows at a time.")
+  LogEvent(paste0(nrow(df)," rows loaded in ", round(difftime(End_time, Start_time, units = "mins"), 2), " mins. Loaded ", rows_to_chop_by, " rows at a time."), LogFile)
+
 }
 
 
@@ -299,6 +326,7 @@ LogEvent <- function (LogString, LogFile) {
   log_con <- file(LogFile, open="a")
   log_string <- paste(now(), ": ", LogString)
   cat(log_string, file = log_con, sep="\n")
+  close(log_con)
 }
 
 # Message2Log
