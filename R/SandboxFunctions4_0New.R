@@ -5,32 +5,17 @@
 
 ### Updated: 03/21/2022 (daniel.shields@abbott.com) - cleaning up and commentin the code to be more shareable and readable.
 ### Updated: 05/17/2022 (rachel.addlespurger@abbott.com) - adding function used for restated date selection by week used in Edge/Vendor Central scripts.
+### Updated: 01/20/2023 (daniel.shields@abbott.com) - adding a fastLoadUtil to load data to our BOA quickly.  Also cleaning up some of the script (java definitions)
 
-
-#set Java Home for mailR
-# Set Java Home ####
-if(file.exists('C:\\Program Files\\Java\\jre1.8.0_321')) {
-  Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_321')
-  
-} else if (file.exists('C:\\Program Files\\Java\\jre1.8.0_291')) {
-  Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_291')
-  
-} else if (file.exists('C:\\Program Files\\Java\\jre1.8.0_271')) {
-  Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_271')
-  
-} else if (file.exists('C:\\Program Files\\Java\\jre1.8.0_45')) {
-  Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_45')
+if(!require(mailR)){
+  install.packages("mailR",dependencies = TRUE)
+  library(mailR)
 }
 
-  if(!require(mailR)){
-    install.packages("mailR",dependencies = TRUE)
-    library(mailR)
-  }
-
-  if(!require(odbc)){
-    install.packages("odbc",dependencies = TRUE)
-    library(odbc)
-  }
+if(!require(odbc)){
+  install.packages("odbc",dependencies = TRUE)
+  library(odbc)
+}
 
 #library(mailR)
 #library(odbc)
@@ -107,7 +92,7 @@ postDataToSandboxv2 <- function(df, dfname, fieldtypes = NULL) {
 
 # function defined to post data as append to the sandbox with optional fieldtypes
 postDataToSandboxAppend <- function(df, dfname, fieldtypes = NULL){
-    #connection to the data defined
+  #connection to the data defined
   con2 <- dbConnect(odbc::odbc(), 
                     .connection_string = odbcConnStr)
   #if fieldtypes is in the input parameters, include it in the statement
@@ -204,6 +189,76 @@ postDataToBOAv2 <- function(df, dfname, fieldtypes = NULL) {
                  overwrite = TRUE,
                  field.types = fieldtypes)
   }
+}
+
+
+
+# function to fastload large data to the BOA
+# will drop table, then append a list of dataframes together into the target schema.tblname
+fastLoadUtil <- function (df, rows_to_chop_by, tblname, schma, LogFilePath) 
+{
+  
+  #suppress messages and ensure packages necessary are loaded for users calling this function
+  suppressPackageStartupMessages(require(dplyr))
+  suppressPackageStartupMessages(require(lubridate))
+  require(DBI)
+  require(devtools)
+  require(CommonFunctions)
+  require(Connections)
+  
+  #define the functions from this package to be used inside of this function; to reduce repeated code
+  .GlobalEnv$LogEvent <- CommonFunctions::LogEvent
+  .GlobalEnv$qryBOAExecute <- CommonFunctions::qryBOAExecute
+  .GlobalEnv$odbcConnStrBOA <- Connections::odbcConnStrBOA
+  .GlobalEnv$postDataToBOAAppend <- CommonFunctions::postDataToBOAAppend
+  
+  LogFile <- LogFilePath
+  rowsinfile <- rows_to_chop_by
+  myDataFileCount <- as.integer((nrow(df)/rowsinfile)+1)
+  myData <- list()
+
+  i <- 1
+  #loop to filter and populate the list
+  while (i <= myDataFileCount) 
+  {
+    
+    myData[[i]] <- df %>%
+      filter((row(df) <= (rowsinfile*i)) & (row(df) > (rowsinfile*(i-1))))
+    
+    LogEvent(paste0("myData list build #:", i, " of ", myDataFileCount), LogFile)
+    
+    i <- i + 1
+    
+  }
+  
+  #drop the table in case it's there.
+  LogEvent(paste0("Drop the table ", schma, ".", tblname, "in case it's there:"), LogFile)
+  sql <- paste0("DROP TABLE IF EXISTS ", schma, ".", tblname, ";")
+  qryBOAExecute(sql)
+  
+  #loop through the list of Dataframes to load these dataframes to a table on the BOA
+  LogEvent(paste0("Start the SQL Server Load loop:"), LogFile)
+  
+  c <- 1
+  #load loop
+  while (c <= myDataFileCount) 
+  {
+    
+    LogEvent(paste0("Load file ", c, " of ", myDataFileCount, " Begin: "), LogFile)
+    
+    #write table to SQL Server
+    postDataToBOAAppend(myData[[c]], tblname, schma)
+    
+    LogEvent(paste0("Load file ", c, " of ", myDataFileCount, " Completed: "), LogFile)
+    
+    c <- c + 1
+    
+  }
+  
+  End_time <- Sys.time()
+  message(nrow(df)," rows loaded in ",round(difftime(End_time, Start_time, units = "mins"), 2) , " mins. Loaded ", rows_to_chop_by, " rows at a time.")
+  LogEvent(paste0(nrow(df)," rows loaded in ", round(difftime(End_time, Start_time, units = "mins"), 2), " mins. Loaded ", rows_to_chop_by, " rows at a time."), LogFile)
+  
 }
 
 
@@ -347,7 +402,7 @@ impactsummaryfun <- function(sharetemptot_out, start_dt = NULL, end_dt = NULL) {
 }
 
 # get objects    
-  get.objects <- function(path2file = NULL, exception = NULL, source = FALSE, message = TRUE) {
+get.objects <- function(path2file = NULL, exception = NULL, source = FALSE, message = TRUE) {
   require("utils")
   require("tools")
   
