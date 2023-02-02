@@ -216,7 +216,9 @@ fastLoadUtil <- function (df, rows_to_chop_by, tblname, schma, LogFilePath)
   rowsinfile <- rows_to_chop_by
   myDataFileCount <- as.integer((nrow(df)/rowsinfile)+1)
   myData <- list()
-
+  
+ Start_time <- Sys.time()
+  
   i <- 1
   #loop to filter and populate the list
   while (i <= myDataFileCount) 
