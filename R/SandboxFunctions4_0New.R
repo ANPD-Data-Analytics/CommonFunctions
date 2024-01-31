@@ -22,7 +22,7 @@ if(!require(odbc)){
 # olapR needs to be manually copied to the local package directory.  Does not work in R 4.0 (04/12/2021)
 #library(olapR)
 
-
+#Test
 
 #### Functions ---------------------------------------------------------------
 
