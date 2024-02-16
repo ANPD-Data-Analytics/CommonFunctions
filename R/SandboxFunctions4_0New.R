@@ -224,10 +224,9 @@ fastLoadUtil <- function (df, rows_to_chop_by, tblname, schma, LogFilePath)
   while (i <= myDataFileCount)
   {
 
-    myData[[i]] <- base::subset(df, (row(df) <= (rowsinfile*i)) & (row(df) > (rowsinfile*(i-1))))
+    myData[[i]] <- na.omit(base::subset(df, (row(df) <= (rowsinfile *
+                                                           i)) & (row(df) > (rowsinfile * (i - 1)))))
 
-    myData[[i]] <- na.omit(myData[[i]])
-    
     LogEvent(paste0("myData list build #:", i, " of ", myDataFileCount), LogFile)
 
     i <- i + 1
