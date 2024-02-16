@@ -7,21 +7,46 @@
 ### Updated: 05/17/2022 (rachel.addlespurger@abbott.com) - adding function used for restated date selection by week used in Edge/Vendor Central scripts.
 ### Updated: 01/20/2023 (daniel.shields@abbott.com) - adding a fastLoadUtil to load data to our BOA quickly.  Also cleaning up some of the script (java definitions)
 
-if(!require(mailR)){
-  install.packages("mailR",dependencies = TRUE)
-  library(mailR)
-}
+# try(
+#   if(!require(mailR)){
+#     install.packages("mailR",dependencies = TRUE)
+#     library(mailR)
+#   },silent = TRUE)
 
 if(!require(odbc)){
   install.packages("odbc",dependencies = TRUE)
   library(odbc)
 }
 
+
 #library(mailR)
 #library(odbc)
 # olapR needs to be manually copied to the local package directory.  Does not work in R 4.0 (04/12/2021)
 #library(olapR)
 
+try(
+  if(!require(blastula)){
+    install.packages("blastula")
+    library(blastula)
+  },silent = TRUE)
+
+try(
+  if(!require(glue)){
+    install.packages("glue")
+    library(glue)
+  },silent = TRUE)
+
+try(
+  if(!require(gt)){
+    install.packages("gt")
+    library(gt)
+  },silent = TRUE)
+
+try(
+  if(!require(knitr)){
+    install.packages("knitr")
+    library(knitr)
+  },silent = TRUE)
 
 
 #### Functions ---------------------------------------------------------------
@@ -217,14 +242,15 @@ fastLoadUtil <- function (df, rows_to_chop_by, tblname, schma, LogFilePath)
   myDataFileCount <- as.integer((nrow(df)/rowsinfile)+1)
   myData <- list()
 
- Start_time <- Sys.time()
+  Start_time <- Sys.time()
 
   i <- 1
   #loop to filter and populate the list
   while (i <= myDataFileCount)
   {
 
-    myData[[i]] <- base::subset(df, (row(df) <= (rowsinfile*i)) & (row(df) > (rowsinfile*(i-1))))
+    myData[[i]] <- na.omit(base::subset(df, (row(df) <= (rowsinfile *
+                                                           i)) & (row(df) > (rowsinfile * (i - 1)))))
 
     LogEvent(paste0("myData list build #:", i, " of ", myDataFileCount), LogFile)
 
@@ -383,38 +409,38 @@ fastLoadSynapseUtil <- function (df, rows_to_chop_by, tblname, schma, LogFilePat
 }
 
 
-##email function using mailR - no attachment
-sendEmailNoAtt <- function (to, sendby, subject, body){
-  send.mail(
-    from = sendby,
-    to = to,
-    subject = subject,
-    smtp = list(
-      host.name = "mail.abbott.com",
-      port = 25,
-      ssl = FALSE
-    ),
-    body = body,
-    send = TRUE,
-    html = TRUE)
-}
-
-##email function using mailR - with attachment
-sendEmailWAtt <- function (to, sendby, subject, body, attachment){
-  send.mail(
-    from = sendby,
-    to = to,
-    subject = subject,
-    smtp = list(
-      host.name = "mail.abbott.com",
-      port = 25,
-      ssl = FALSE
-    ),
-    body = body,
-    attach.files = attachment,
-    send = TRUE,
-    html = TRUE)
-}
+# ##email function using mailR - no attachment
+# sendEmailNoAtt <- function (to, sendby, subject, body){
+#   send.mail(
+#     from = sendby,
+#     to = to,
+#     subject = subject,
+#     smtp = list(
+#       host.name = "mail.abbott.com",
+#       port = 25,
+#       ssl = FALSE
+#     ),
+#     body = body,
+#     send = TRUE,
+#     html = TRUE)
+# }
+#
+# ##email function using mailR - with attachment
+# sendEmailWAtt <- function (to, sendby, subject, body, attachment){
+#   send.mail(
+#     from = sendby,
+#     to = to,
+#     subject = subject,
+#     smtp = list(
+#       host.name = "mail.abbott.com",
+#       port = 25,
+#       ssl = FALSE
+#     ),
+#     body = body,
+#     attach.files = attachment,
+#     send = TRUE,
+#     html = TRUE)
+# }
 
 
 
@@ -580,4 +606,84 @@ get.objects <- function(path2file = NULL, exception = NULL, source = FALSE, mess
   }
 
   return(list_objects)
+}
+
+
+## new email function with attachment
+
+sendEmailWAtt <- function (to, sendby, subject, body, attachment = NULL, tables_list = NULL){
+
+  # Set password in environment
+  Sys.setenv(SMTP_PASSWORD = try(readtext(paste("C:/Users/", Sys.getenv("username"), "/OneDrive - Abbott/LoginInfo/BOADB__PWD.txt", sep = ""))$text,
+                                 silent = TRUE))
+
+  # Convert each data frame in the list to an HTML table and concatenate them
+  if (!is.null(tables_list)) {
+    html_tables <- lapply(tables_list, function(df) {
+      knitr::kable(df, format = "html") #%>%
+      # kableExtra::row_spec(0, bold = TRUE, extra_css = 'border-top: 1px solid black; padding: 4px;')
+    })
+    html_tables_combined <- paste(unlist(html_tables), collapse = "<br><br>", sep = "<br><br>")
+    body <- paste(body, html_tables_combined, sep = "<br><br>")
+  }
+  email <- compose_email(
+    body = md(body)
+  )
+
+  # Add attachments if provided
+  if (!is.null(attachment)) {
+    for (attachment in attachment) {
+      email <- email %>% add_attachment(file = attachment)
+    }
+  }
+
+  email %>%
+    smtp_send(
+      to = to,
+      from = sendby,
+      subject = subject,
+      credentials = creds_envvar(
+        user = sysUser511,
+        host = "mail.abbott.com",
+        port = 25,
+        pass_envvar = "SMTP_PASSWORD",
+        use_ssl = FALSE
+      )
+    )
+}
+
+
+## new email function no attachment
+sendEmailNoAtt <- function(to, sendby, subject, body, tables_list = NULL) {
+
+  # Set password in environment
+  Sys.setenv(SMTP_PASSWORD = try(readtext(paste("C:/Users/", Sys.getenv("username"), "/OneDrive - Abbott/LoginInfo/BOADB__PWD.txt", sep = ""))$text,
+                                 silent = TRUE))
+
+  # Convert each data frame in the list to an HTML table and concatenate them
+  if (!is.null(tables_list)) {
+    html_tables <- lapply(tables_list, function(df) {
+      knitr::kable(df, format = "html") #%>%
+      # kableExtra::row_spec(0, bold = TRUE, extra_css = 'border-top: 1px solid black; padding: 4px;')
+    })
+    html_tables_combined <- paste(unlist(html_tables), collapse = "<br><br>", sep = "<br><br>")
+    body <- paste(body, html_tables_combined, sep = "<br><br>")
+  }
+  email <- compose_email(
+    body = md(body)
+  )
+
+  email %>%
+    smtp_send(
+      to = to,
+      from = sendby,
+      subject = subject,
+      credentials = creds_envvar(
+        user = sysUser511,
+        host = "mail.abbott.com",
+        port = 25,
+        pass_envvar = "SMTP_PASSWORD",
+        use_ssl = FALSE
+      )
+    )
 }
