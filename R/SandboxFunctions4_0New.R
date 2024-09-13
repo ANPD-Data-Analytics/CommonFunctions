@@ -22,6 +22,29 @@ if(!require(odbc)){
 # olapR needs to be manually copied to the local package directory.  Does not work in R 4.0 (04/12/2021)
 #library(olapR)
 
+try(
+if(!require(blastula)){
+install.packages("blastula")
+library(blastula)
+},silent = TRUE)
+
+try(
+if(!require(glue)){
+install.packages("glue")
+library(glue)
+},silent = TRUE)
+
+try(
+if(!require(gt)){
+install.packages("gt")
+library(gt)
+},silent = TRUE)
+
+try(
+if(!require(knitr)){
+install.packages("knitr")
+library(knitr)
+},silent = TRUE)
 
 
 #### Functions ---------------------------------------------------------------
@@ -581,4 +604,72 @@ get.objects <- function(path2file = NULL, exception = NULL, source = FALSE, mess
   }
 
   return(list_objects)
+}
+
+
+## new email function with attachment 
+
+sendEmailWAttNew <- function (to, sendby, subject, body, attachment = NULL, tables_list = NULL){
+  # Convert each data frame in the list to an HTML table and concatenate them
+  if (!is.null(tables_list)) {
+    html_tables <- lapply(tables_list, function(df) {
+      knitr::kable(df, format = "html") #%>%
+      # kableExtra::row_spec(0, bold = TRUE, extra_css = 'border-top: 1px solid black; padding: 4px;')
+    })
+    html_tables_combined <- paste(unlist(html_tables), collapse = "<br><br>", sep = "<br><br>")
+    body <- paste(body, html_tables_combined, sep = "<br><br>")
+  }
+  email <- compose_email(
+    body = md(body)
+  )
+
+    # Add attachment if provided
+  if (!is.null(attachment)) {
+    email <- email %>% add_attachment(file = attachment)
+  }
+  
+  email %>%
+    smtp_send(
+      to = to,
+      from = sendby,
+      subject = subject,
+      credentials = creds_envvar(
+        user = sysUser511,
+        host = "mail.abbott.com",
+        port = 25,
+        pass_envvar = "SMTP_PASSWORD",
+        use_ssl = FALSE
+      )
+    )
+}
+
+
+## new email function no attachment
+sendEmailNoAttNew <- function(to, sendby, subject, body, tables_list = NULL) {
+  # Convert each data frame in the list to an HTML table and concatenate them
+  if (!is.null(tables_list)) {
+    html_tables <- lapply(tables_list, function(df) {
+      knitr::kable(df, format = "html") #%>%
+      # kableExtra::row_spec(0, bold = TRUE, extra_css = 'border-top: 1px solid black; padding: 4px;')
+    })
+    html_tables_combined <- paste(unlist(html_tables), collapse = "<br><br>", sep = "<br><br>")
+    body <- paste(body, html_tables_combined, sep = "<br><br>")
+  }
+  email <- compose_email(
+    body = md(body)
+  )
+  
+  email %>%
+    smtp_send(
+      to = to,
+      from = sendby,
+      subject = subject,
+      credentials = creds_envvar(
+        user = sysUser511,
+        host = "mail.abbott.com",
+        port = 25,
+        pass_envvar = "SMTP_PASSWORD",
+        use_ssl = FALSE
+      )
+    )
 }
