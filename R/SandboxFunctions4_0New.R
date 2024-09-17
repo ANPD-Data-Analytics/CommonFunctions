@@ -610,6 +610,10 @@ get.objects <- function(path2file = NULL, exception = NULL, source = FALSE, mess
 ## new email function with attachment 
 
 sendEmailWAttNew <- function (to, sendby, subject, body, attachment = NULL, tables_list = NULL){
+
+  # Set password in environment
+  Sys.setenv("SMTP_PASSWORD"= try(readtext("BOADB__PWD.txt")$text, silent = TRUE))
+  
   # Convert each data frame in the list to an HTML table and concatenate them
   if (!is.null(tables_list)) {
     html_tables <- lapply(tables_list, function(df) {
@@ -646,6 +650,10 @@ sendEmailWAttNew <- function (to, sendby, subject, body, attachment = NULL, tabl
 
 ## new email function no attachment
 sendEmailNoAttNew <- function(to, sendby, subject, body, tables_list = NULL) {
+
+  # Set password in environment
+    Sys.setenv("SMTP_PASSWORD"= try(readtext("BOADB__PWD.txt")$text, silent = TRUE))
+  
   # Convert each data frame in the list to an HTML table and concatenate them
   if (!is.null(tables_list)) {
     html_tables <- lapply(tables_list, function(df) {
