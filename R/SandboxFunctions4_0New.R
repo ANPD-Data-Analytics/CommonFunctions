@@ -629,9 +629,11 @@ sendEmailWAttNew <- function (to, sendby, subject, body, attachment = NULL, tabl
     body = md(body)
   )
 
-    # Add attachment if provided
-  if (!is.null(attachment)) {
-    email <- email %>% add_attachment(file = attachment)
+  # Add attachments if provided
+  if (!is.null(attachments)) {
+    for (attachment in attachments) {
+      email <- email %>% add_attachment(file = attachment)
+    }
   }
   
   email %>%
