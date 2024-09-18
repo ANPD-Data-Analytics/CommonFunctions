@@ -613,7 +613,8 @@ get.objects <- function(path2file = NULL, exception = NULL, source = FALSE, mess
 sendEmailWAttNew <- function (to, sendby, subject, body, attachment = NULL, tables_list = NULL){
 
   # Set password in environment
-  Sys.setenv("SMTP_PASSWORD"= try(readtext("BOADB__PWD.txt")$text, silent = TRUE))
+  Sys.setenv(SMTP_PASSWORD = try(readtext(paste("C:/Users/", Sys.getenv("username"), "/OneDrive - Abbott/LoginInfo/BOADB__PWD.txt", sep = ""))$text, 
+                                 silent = TRUE))
   
   # Convert each data frame in the list to an HTML table and concatenate them
   if (!is.null(tables_list)) {
@@ -653,7 +654,8 @@ sendEmailWAttNew <- function (to, sendby, subject, body, attachment = NULL, tabl
 sendEmailNoAttNew <- function(to, sendby, subject, body, tables_list = NULL) {
 
   # Set password in environment
-    Sys.setenv("SMTP_PASSWORD"= try(readtext("BOADB__PWD.txt")$text, silent = TRUE))
+  Sys.setenv(SMTP_PASSWORD = try(readtext(paste("C:/Users/", Sys.getenv("username"), "/OneDrive - Abbott/LoginInfo/BOADB__PWD.txt", sep = ""))$text, 
+                                 silent = TRUE))
   
   # Convert each data frame in the list to an HTML table and concatenate them
   if (!is.null(tables_list)) {
