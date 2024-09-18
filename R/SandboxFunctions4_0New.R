@@ -6,16 +6,17 @@
 ### Updated: 03/21/2022 (daniel.shields@abbott.com) - cleaning up and commentin the code to be more shareable and readable.
 ### Updated: 05/17/2022 (rachel.addlespurger@abbott.com) - adding function used for restated date selection by week used in Edge/Vendor Central scripts.
 ### Updated: 01/20/2023 (daniel.shields@abbott.com) - adding a fastLoadUtil to load data to our BOA quickly.  Also cleaning up some of the script (java definitions)
-
+try(
 if(!require(mailR)){
   install.packages("mailR",dependencies = TRUE)
   library(mailR)
-}
+},silent = TRUE)
 
 if(!require(odbc)){
   install.packages("odbc",dependencies = TRUE)
   library(odbc)
 }
+
 
 #library(mailR)
 #library(odbc)
