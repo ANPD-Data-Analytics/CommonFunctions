@@ -6,11 +6,13 @@
 ### Updated: 03/21/2022 (daniel.shields@abbott.com) - cleaning up and commentin the code to be more shareable and readable.
 ### Updated: 05/17/2022 (rachel.addlespurger@abbott.com) - adding function used for restated date selection by week used in Edge/Vendor Central scripts.
 ### Updated: 01/20/2023 (daniel.shields@abbott.com) - adding a fastLoadUtil to load data to our BOA quickly.  Also cleaning up some of the script (java definitions)
-try(
-if(!require(mailR)){
-  install.packages("mailR",dependencies = TRUE)
-  library(mailR)
-},silent = TRUE)
+### Updated: 09/30/2024 (rachel.addlespurger@abbott.com) - updating email function to use blastula instead of mailR due to JAVA removal.
+
+# try(
+# if(!require(mailR)){
+#   install.packages("mailR",dependencies = TRUE)
+#   library(mailR)
+# },silent = TRUE)
 
 if(!require(odbc)){
   install.packages("odbc",dependencies = TRUE)
@@ -408,38 +410,38 @@ fastLoadSynapseUtil <- function (df, rows_to_chop_by, tblname, schma, LogFilePat
 }
 
 
-##email function using mailR - no attachment
-sendEmailNoAtt <- function (to, sendby, subject, body){
-  send.mail(
-    from = sendby,
-    to = to,
-    subject = subject,
-    smtp = list(
-      host.name = "mail.abbott.com",
-      port = 25,
-      ssl = FALSE
-    ),
-    body = body,
-    send = TRUE,
-    html = TRUE)
-}
-
-##email function using mailR - with attachment
-sendEmailWAtt <- function (to, sendby, subject, body, attachment){
-  send.mail(
-    from = sendby,
-    to = to,
-    subject = subject,
-    smtp = list(
-      host.name = "mail.abbott.com",
-      port = 25,
-      ssl = FALSE
-    ),
-    body = body,
-    attach.files = attachment,
-    send = TRUE,
-    html = TRUE)
-}
+# ##email function using mailR - no attachment
+# sendEmailNoAtt <- function (to, sendby, subject, body){
+#   send.mail(
+#     from = sendby,
+#     to = to,
+#     subject = subject,
+#     smtp = list(
+#       host.name = "mail.abbott.com",
+#       port = 25,
+#       ssl = FALSE
+#     ),
+#     body = body,
+#     send = TRUE,
+#     html = TRUE)
+# }
+#
+# ##email function using mailR - with attachment
+# sendEmailWAtt <- function (to, sendby, subject, body, attachment){
+#   send.mail(
+#     from = sendby,
+#     to = to,
+#     subject = subject,
+#     smtp = list(
+#       host.name = "mail.abbott.com",
+#       port = 25,
+#       ssl = FALSE
+#     ),
+#     body = body,
+#     attach.files = attachment,
+#     send = TRUE,
+#     html = TRUE)
+# }
 
 
 
@@ -608,14 +610,14 @@ get.objects <- function(path2file = NULL, exception = NULL, source = FALSE, mess
 }
 
 
-## new email function with attachment 
+## new email function with attachment
 
-sendEmailWAttNew <- function (to, sendby, subject, body, attachment = NULL, tables_list = NULL){
+sendEmailWAtt <- function (to, sendby, subject, body, attachment = NULL, tables_list = NULL){
 
   # Set password in environment
-  Sys.setenv(SMTP_PASSWORD = try(readtext(paste("C:/Users/", Sys.getenv("username"), "/OneDrive - Abbott/LoginInfo/BOADB__PWD.txt", sep = ""))$text, 
+  Sys.setenv(SMTP_PASSWORD = try(readtext(paste("C:/Users/", Sys.getenv("username"), "/OneDrive - Abbott/LoginInfo/BOADB__PWD.txt", sep = ""))$text,
                                  silent = TRUE))
-  
+
   # Convert each data frame in the list to an HTML table and concatenate them
   if (!is.null(tables_list)) {
     html_tables <- lapply(tables_list, function(df) {
@@ -635,7 +637,7 @@ sendEmailWAttNew <- function (to, sendby, subject, body, attachment = NULL, tabl
       email <- email %>% add_attachment(file = attachment)
     }
   }
-  
+
   email %>%
     smtp_send(
       to = to,
@@ -653,12 +655,12 @@ sendEmailWAttNew <- function (to, sendby, subject, body, attachment = NULL, tabl
 
 
 ## new email function no attachment
-sendEmailNoAttNew <- function(to, sendby, subject, body, tables_list = NULL) {
+sendEmailNoAtt <- function(to, sendby, subject, body, tables_list = NULL) {
 
   # Set password in environment
-  Sys.setenv(SMTP_PASSWORD = try(readtext(paste("C:/Users/", Sys.getenv("username"), "/OneDrive - Abbott/LoginInfo/BOADB__PWD.txt", sep = ""))$text, 
+  Sys.setenv(SMTP_PASSWORD = try(readtext(paste("C:/Users/", Sys.getenv("username"), "/OneDrive - Abbott/LoginInfo/BOADB__PWD.txt", sep = ""))$text,
                                  silent = TRUE))
-  
+
   # Convert each data frame in the list to an HTML table and concatenate them
   if (!is.null(tables_list)) {
     html_tables <- lapply(tables_list, function(df) {
@@ -671,7 +673,7 @@ sendEmailNoAttNew <- function(to, sendby, subject, body, tables_list = NULL) {
   email <- compose_email(
     body = md(body)
   )
-  
+
   email %>%
     smtp_send(
       to = to,
