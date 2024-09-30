@@ -6,6 +6,7 @@
 ### Updated: 03/21/2022 (daniel.shields@abbott.com) - cleaning up and commentin the code to be more shareable and readable.
 ### Updated: 05/17/2022 (rachel.addlespurger@abbott.com) - adding function used for restated date selection by week used in Edge/Vendor Central scripts.
 ### Updated: 01/20/2023 (daniel.shields@abbott.com) - adding a fastLoadUtil to load data to our BOA quickly.  Also cleaning up some of the script (java definitions)
+### Updated: 09/30/2024 (rachel.addlespurger@abbott.com) - updating email function to use blastula instead of mailR due to JAVA removal.
 
 # try(
 #   if(!require(mailR)){
