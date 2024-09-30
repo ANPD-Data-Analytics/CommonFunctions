@@ -8,12 +8,18 @@
 ### Updated: 01/20/2023 (daniel.shields@abbott.com) - adding a fastLoadUtil to load data to our BOA quickly.  Also cleaning up some of the script (java definitions)
 ### Updated: 09/30/2024 (rachel.addlespurger@abbott.com) - updating email function to use blastula instead of mailR due to JAVA removal.
 
-
 # try(
 #   if(!require(mailR)){
 #     install.packages("mailR",dependencies = TRUE)
 #     library(mailR)
 #   },silent = TRUE)
+
+try(
+  if(!require(mailR)){
+    install.packages("mailR",dependencies = TRUE)
+    library(mailR)
+  },silent = TRUE)
+
 
 if(!require(odbc)){
   install.packages("odbc",dependencies = TRUE)
@@ -27,6 +33,7 @@ if(!require(odbc)){
 #library(olapR)
 
 try(
+
   if(!require(blastula)){
     install.packages("blastula")
     library(blastula)
@@ -49,6 +56,30 @@ try(
     install.packages("knitr")
     library(knitr)
   },silent = TRUE)
+
+if(!require(blastula)){
+  install.packages("blastula")
+  library(blastula)
+},silent = TRUE)
+
+try(
+  if(!require(glue)){
+    install.packages("glue")
+    library(glue)
+  },silent = TRUE)
+
+try(
+  if(!require(gt)){
+    install.packages("gt")
+    library(gt)
+  },silent = TRUE)
+
+try(
+  if(!require(knitr)){
+    install.packages("knitr")
+    library(knitr)
+  },silent = TRUE)
+
 
 
 #### Functions ---------------------------------------------------------------
@@ -611,6 +642,7 @@ get.objects <- function(path2file = NULL, exception = NULL, source = FALSE, mess
 }
 
 
+
 # new email function with attachment
 
 sendEmailWAtt <- function (to, sendby, subject, body, attachment = NULL, tables_list = NULL){
@@ -619,73 +651,91 @@ sendEmailWAtt <- function (to, sendby, subject, body, attachment = NULL, tables_
   Sys.setenv(SMTP_PASSWORD = try(readtext(paste("C:/Users/", Sys.getenv("username"), "/OneDrive - Abbott/LoginInfo/BOADB__PWD.txt", sep = ""))$text,
                                  silent = TRUE))
 
-  # Convert each data frame in the list to an HTML table and concatenate them
-  if (!is.null(tables_list)) {
-    html_tables <- lapply(tables_list, function(df) {
-      knitr::kable(df, format = "html") #%>%
-      # kableExtra::row_spec(0, bold = TRUE, extra_css = 'border-top: 1px solid black; padding: 4px;')
-    })
-    html_tables_combined <- paste(unlist(html_tables), collapse = "<br><br>", sep = "<br><br>")
-    body <- paste(body, html_tables_combined, sep = "<br><br>")
-  }
-  email <- compose_email(
-    body = md(body)
-  )
 
-  # Add attachments if provided
-  if (!is.null(attachment)) {
-    for (attachment in attachment) {
-      email <- email %>% add_attachment(file = attachment)
+  ## new email function with attachment
+
+  sendEmailWAttNew <- function (to, sendby, subject, body, attachment = NULL, tables_list = NULL){
+
+    # Set password in environment
+    Sys.setenv(SMTP_PASSWORD = try(readtext(paste("C:/Users/", Sys.getenv("username"), "/OneDrive - Abbott/LoginInfo/BOADB__PWD.txt", sep = ""))$text,
+                                   silent = TRUE))
+
+    # Convert each data frame in the list to an HTML table and concatenate them
+    if (!is.null(tables_list)) {
+      html_tables <- lapply(tables_list, function(df) {
+        knitr::kable(df, format = "html") #%>%
+        # kableExtra::row_spec(0, bold = TRUE, extra_css = 'border-top: 1px solid black; padding: 4px;')
+      })
+      html_tables_combined <- paste(unlist(html_tables), collapse = "<br><br>", sep = "<br><br>")
+      body <- paste(body, html_tables_combined, sep = "<br><br>")
     }
+    email <- compose_email(
+      body = md(body)
+    )
+
+    # Add attachments if provided
+    if (!is.null(attachment)) {
+      for (attachment in attachment) {
+        email <- email %>% add_attachment(file = attachment)
+      }
+    }
+
+    email %>%
+      smtp_send(
+        to = to,
+        from = sendby,
+        subject = subject,
+        credentials = creds_envvar(
+          user = sysUser511,
+          host = "mail.abbott.com",
+          port = 25,
+          pass_envvar = "SMTP_PASSWORD",
+          use_ssl = FALSE
+        )
+      )
   }
 
-  email %>%
-    smtp_send(
-      to = to,
-      from = sendby,
-      subject = subject,
-      credentials = creds_envvar(
-        user = sysUser511,
-        host = "mail.abbott.com",
-        port = 25,
-        pass_envvar = "SMTP_PASSWORD",
-        use_ssl = FALSE
+
+
+  # new email function no attachment
+  sendEmailNoAtt <- function(to, sendby, subject, body, tables_list = NULL) {
+
+    # Set password in environment
+    Sys.setenv(SMTP_PASSWORD = try(readtext(paste("C:/Users/", Sys.getenv("username"), "/OneDrive - Abbott/LoginInfo/BOADB__PWD.txt", sep = ""))$text,
+                                   silent = TRUE))
+
+    ## new email function no attachment
+    sendEmailNoAttNew <- function(to, sendby, subject, body, tables_list = NULL) {
+
+      # Set password in environment
+      Sys.setenv(SMTP_PASSWORD = try(readtext(paste("C:/Users/", Sys.getenv("username"), "/OneDrive - Abbott/LoginInfo/BOADB__PWD.txt", sep = ""))$text,
+                                     silent = TRUE))
+
+      >>>>>>> main
+      # Convert each data frame in the list to an HTML table and concatenate them
+      if (!is.null(tables_list)) {
+        html_tables <- lapply(tables_list, function(df) {
+          knitr::kable(df, format = "html") #%>%
+          # kableExtra::row_spec(0, bold = TRUE, extra_css = 'border-top: 1px solid black; padding: 4px;')
+        })
+        html_tables_combined <- paste(unlist(html_tables), collapse = "<br><br>", sep = "<br><br>")
+        body <- paste(body, html_tables_combined, sep = "<br><br>")
+      }
+      email <- compose_email(
+        body = md(body)
       )
-    )
-}
 
-
-# new email function no attachment
-sendEmailNoAtt <- function(to, sendby, subject, body, tables_list = NULL) {
-
-  # Set password in environment
-  Sys.setenv(SMTP_PASSWORD = try(readtext(paste("C:/Users/", Sys.getenv("username"), "/OneDrive - Abbott/LoginInfo/BOADB__PWD.txt", sep = ""))$text,
-                                 silent = TRUE))
-
-  # Convert each data frame in the list to an HTML table and concatenate them
-  if (!is.null(tables_list)) {
-    html_tables <- lapply(tables_list, function(df) {
-      knitr::kable(df, format = "html") #%>%
-      # kableExtra::row_spec(0, bold = TRUE, extra_css = 'border-top: 1px solid black; padding: 4px;')
-    })
-    html_tables_combined <- paste(unlist(html_tables), collapse = "<br><br>", sep = "<br><br>")
-    body <- paste(body, html_tables_combined, sep = "<br><br>")
-  }
-  email <- compose_email(
-    body = md(body)
-  )
-
-  email %>%
-    smtp_send(
-      to = to,
-      from = sendby,
-      subject = subject,
-      credentials = creds_envvar(
-        user = sysUser511,
-        host = "mail.abbott.com",
-        port = 25,
-        pass_envvar = "SMTP_PASSWORD",
-        use_ssl = FALSE
-      )
-    )
-}
+      email %>%
+        smtp_send(
+          to = to,
+          from = sendby,
+          subject = subject,
+          credentials = creds_envvar(
+            user = sysUser511,
+            host = "mail.abbott.com",
+            port = 25,
+            pass_envvar = "SMTP_PASSWORD",
+            use_ssl = FALSE
+          )
+        )
+    }
