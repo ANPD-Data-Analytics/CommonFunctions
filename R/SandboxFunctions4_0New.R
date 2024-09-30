@@ -8,6 +8,7 @@
 ### Updated: 01/20/2023 (daniel.shields@abbott.com) - adding a fastLoadUtil to load data to our BOA quickly.  Also cleaning up some of the script (java definitions)
 ### Updated: 09/30/2024 (rachel.addlespurger@abbott.com) - updating email function to use blastula instead of mailR due to JAVA removal.
 
+
 # try(
 #   if(!require(mailR)){
 #     install.packages("mailR",dependencies = TRUE)
