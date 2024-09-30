@@ -610,7 +610,7 @@ get.objects <- function(path2file = NULL, exception = NULL, source = FALSE, mess
 }
 
 
-## new email function with attachment
+# new email function with attachment
 
 sendEmailWAtt <- function (to, sendby, subject, body, attachment = NULL, tables_list = NULL){
 
@@ -654,7 +654,7 @@ sendEmailWAtt <- function (to, sendby, subject, body, attachment = NULL, tables_
 }
 
 
-## new email function no attachment
+# new email function no attachment
 sendEmailNoAtt <- function(to, sendby, subject, body, tables_list = NULL) {
 
   # Set password in environment
